@@ -38,12 +38,7 @@ public class YorshEffect extends MobEffect {
         MobEffectInstance instance = entity.getEffect(this);
         if (instance == null) return;
 
-        int duration = instance.getDuration();
-        int cycle = duration % 300; // 15 seconds (300 ticks) cycle
-
-        // 300..101 (200 ticks = 10s): Active Phase (Strength 3 -> +6.0 damage)
-        // 100..1 (100 ticks = 5s): Weakness Phase (Weakness 2 -> -4.0 damage)
-        double targetModifier = (cycle > 100) ? 6.0 : -4.0;
+        double targetModifier = isActivePhase(entity, instance) ? 6.0 : -4.0;
 
         AttributeInstance attr = entity.getAttribute(Attributes.ATTACK_DAMAGE);
         if (attr != null) {
@@ -73,8 +68,14 @@ public class YorshEffect extends MobEffect {
 
     public static boolean isInActivePhase(LivingEntity entity) {
         MobEffectInstance instance = entity.getEffect(CocktailsMod.YORSH_EFFECT.get());
-        if (instance == null) return false;
-        int cycle = instance.getDuration() % 300;
-        return cycle > 100;
+        return instance != null && isActivePhase(entity, instance);
+    }
+
+    private static boolean isActivePhase(LivingEntity entity, MobEffectInstance instance) {
+        int duration = instance.getDuration();
+        int cycle = duration < 0
+                ? Math.floorMod(entity.tickCount, 300)
+                : Math.floorMod(-duration, 300);
+        return cycle < 200;
     }
 }
