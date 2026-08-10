@@ -1,0 +1,54 @@
+package com.cocktails;
+
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUtils;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.level.Level;
+
+import java.util.function.Supplier;
+
+public class DrinkItem extends Item {
+    private final Supplier<MobEffectInstance> effectSupplier;
+
+    public DrinkItem(Properties properties) {
+        this(properties, null);
+    }
+
+    public DrinkItem(Properties properties, Supplier<MobEffectInstance> effectSupplier) {
+        super(properties);
+        this.effectSupplier = effectSupplier;
+    }
+
+    @Override
+    public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
+        if (!level.isClientSide() && effectSupplier != null) {
+            MobEffectInstance effect = effectSupplier.get();
+            if (effect != null) {
+                entity.addEffect(new MobEffectInstance(effect));
+            }
+        }
+
+        ItemStack result = super.finishUsingItem(stack, level, entity);
+
+        if (entity instanceof Player player && !player.getAbilities().instabuild) {
+            return ItemUtils.createFilledResult(result, player, new ItemStack(Items.GLASS_BOTTLE));
+        }
+
+        return result;
+    }
+
+    @Override
+    public UseAnim getUseAnimation(ItemStack stack) {
+        return UseAnim.DRINK;
+    }
+
+    @Override
+    public int getUseDuration(ItemStack stack) {
+        return 32;
+    }
+}
