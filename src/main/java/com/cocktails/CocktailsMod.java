@@ -2,7 +2,6 @@ package com.cocktails;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -15,8 +14,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -30,6 +27,12 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.ForgeHooks;
 
 @Mod(CocktailsMod.MODID)
 public class CocktailsMod {
@@ -104,28 +107,48 @@ public class CocktailsMod {
     }
 
     private boolean tryPlaceBlockUnderPlayer(Player player, InteractionHand hand, ItemStack held) {
-        if (!player.level().isClientSide() && player.hasEffect(SCREWDRIVER_EFFECT.get()) && player.isCrouching()) {
-            if (held.getItem() instanceof BlockItem blockItem) {
-                Level level = player.level();
-                BlockPos targetPos = player.blockPosition().below();
-                if (!level.getBlockState(targetPos).canBeReplaced()) {
-                    targetPos = targetPos.below();
-                }
-                if (level.getBlockState(targetPos).canBeReplaced()) {
-                    BlockState stateToPlace = blockItem.getBlock().defaultBlockState();
-                    if (level.setBlock(targetPos, stateToPlace, 3)) {
-                        SoundType soundType = stateToPlace.getSoundType(level, targetPos, player);
-                        level.playSound(null, targetPos, soundType.getPlaceSound(), SoundSource.BLOCKS, (soundType.getVolume() + 1.0F) / 2.0F, soundType.getPitch() * 0.8F);
-                        if (!player.getAbilities().instabuild) {
-                            held.shrink(1);
-                        }
-                        player.swing(hand, true);
-                        return true;
-                    }
-                }
-            }
+        if (player.level().isClientSide()
+                || !player.hasEffect(SCREWDRIVER_EFFECT.get())
+                || !player.isCrouching()
+                || !(held.getItem() instanceof BlockItem)) {
+            return false;
         }
-        return false;
+
+        Level level = player.level();
+        BlockPos targetPos = player.blockPosition().below();
+
+        if (!level.getBlockState(targetPos).canBeReplaced()) {
+            targetPos = targetPos.below();
+        }
+
+        // in this place you dont allow place blocks
+        if (!level.getBlockState(targetPos).canBeReplaced()) {
+            return false;
+        }
+
+        // check protect and player laws
+        if (!level.mayInteract(player, targetPos)) {
+            return false;
+        }
+
+        BlockHitResult hitResult = new BlockHitResult(
+                Vec3.atCenterOf(targetPos),
+                Direction.UP,
+                targetPos,
+                false
+        );
+
+        UseOnContext context = new UseOnContext(player, hand, hitResult);
+
+        int oldCount = held.getCount();
+        InteractionResult result = ForgeHooks.onPlaceItemIntoWorld(context);
+
+        // in creative mod blocks should not be spent
+        if (player.getAbilities().instabuild) {
+            held.setCount(oldCount);
+        }
+
+        return result.consumesAction();
     }
 
     @SubscribeEvent
