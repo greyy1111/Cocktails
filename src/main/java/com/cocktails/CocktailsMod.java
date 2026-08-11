@@ -2,7 +2,9 @@ package com.cocktails;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
@@ -13,7 +15,11 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -27,12 +33,6 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
-import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.ForgeHooks;
 
 @Mod(CocktailsMod.MODID)
 public class CocktailsMod {
@@ -151,17 +151,37 @@ public class CocktailsMod {
         return result.consumesAction();
     }
 
+    private boolean wantsToPlaceBlockUnderPlayer(Player player, ItemStack held) {
+        return player.hasEffect(SCREWDRIVER_EFFECT.get())
+                && player.isCrouching()
+                && held.getItem() instanceof BlockItem;
+    }
+
+    private void handleBlockPlacement(PlayerInteractEvent event) {
+        Player player = event.getEntity();
+
+        if (!wantsToPlaceBlockUnderPlayer(player, event.getItemStack())) {
+            return;
+        }
+
+        if (player.level().isClientSide()) {
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            event.setCanceled(true);
+            return;
+        }
+
+        boolean placed = tryPlaceBlockUnderPlayer(player, event.getHand(), event.getItemStack());
+        event.setCancellationResult(placed ? InteractionResult.CONSUME : InteractionResult.FAIL);
+        event.setCanceled(true);
+    }
+
     @SubscribeEvent
     public void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
-        if (tryPlaceBlockUnderPlayer(event.getEntity(), event.getHand(), event.getItemStack())) {
-            event.setCanceled(true);
-        }
+        handleBlockPlacement(event);
     }
 
     @SubscribeEvent
     public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (tryPlaceBlockUnderPlayer(event.getEntity(), event.getHand(), event.getItemStack())) {
-            event.setCanceled(true);
-        }
+        handleBlockPlacement(event);
     }
 }
