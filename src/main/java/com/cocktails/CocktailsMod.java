@@ -44,6 +44,7 @@ public class CocktailsMod {
 
     public static final RegistryObject<MobEffect> YORSH_EFFECT = MOB_EFFECTS.register("yorsh_effect", YorshEffect::new);
     public static final RegistryObject<MobEffect> SCREWDRIVER_EFFECT = MOB_EFFECTS.register("screwdriver_effect", ScrewdriverEffect::new);
+    public static final RegistryObject<MobEffect> SANGRIA_EFFECT = MOB_EFFECTS.register("sangria_effect", SangriaEffect::new);
 
     private static Item.Properties drinkProperties() {
         return new Item.Properties()
@@ -64,6 +65,7 @@ public class CocktailsMod {
     public static final RegistryObject<Item> RUM = ITEMS.register("rum", () -> new DrinkItem(drinkProperties()));
     public static final RegistryObject<Item> YORSH = ITEMS.register("yorsh", () -> new DrinkItem(drinkProperties(), () -> new MobEffectInstance(YORSH_EFFECT.get(), 2400, 0)));
     public static final RegistryObject<Item> SCREWDRIVER = ITEMS.register("screwdriver", () -> new DrinkItem(drinkProperties(), () -> new MobEffectInstance(SCREWDRIVER_EFFECT.get(), 12000, 0)));
+    public static final RegistryObject<Item> SANGRIA = ITEMS.register("sangria", () -> new DrinkItem(drinkProperties(), () -> new MobEffectInstance(SANGRIA_EFFECT.get(), 6000, 0)));
 
     public CocktailsMod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -91,6 +93,7 @@ public class CocktailsMod {
             event.accept(RUM);
             event.accept(YORSH);
             event.accept(SCREWDRIVER);
+            event.accept(SANGRIA);
         }
     }
 

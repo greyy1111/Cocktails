@@ -30,6 +30,9 @@ public class DrinkItem extends Item {
 
             if (effect != null) {
                 entity.addEffect(new MobEffectInstance(effect));
+                if (effect.getEffect() == CocktailsMod.SANGRIA_EFFECT.get() && level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+                    SangriaEffect.spawnInitialBurst(serverLevel, entity);
+                }
             }
         }
 

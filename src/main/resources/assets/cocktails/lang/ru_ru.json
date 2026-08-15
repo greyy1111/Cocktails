@@ -8,5 +8,7 @@
   "item.cocktails.yorsh": "Ёрш",
   "effect.cocktails.yorsh_effect": "Эффект Ёрша",
   "item.cocktails.screwdriver": "Отвёртка",
-  "effect.cocktails.screwdriver_effect": "Эффект Отвёртки"
+  "effect.cocktails.screwdriver_effect": "Эффект Отвёртки",
+  "item.cocktails.sangria": "Сангрия",
+  "effect.cocktails.sangria_effect": "Эффект Сангрии"
 }

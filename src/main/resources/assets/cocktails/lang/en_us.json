@@ -8,5 +8,7 @@
   "item.cocktails.yorsh": "Yorsh",
   "effect.cocktails.yorsh_effect": "Yorsh Effect",
   "item.cocktails.screwdriver": "Screwdriver",
-  "effect.cocktails.screwdriver_effect": "Screwdriver Effect"
+  "effect.cocktails.screwdriver_effect": "Screwdriver Effect",
+  "item.cocktails.sangria": "Sangria",
+  "effect.cocktails.sangria_effect": "Sangria Effect"
 }
