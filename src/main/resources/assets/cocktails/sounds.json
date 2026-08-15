@@ -1,0 +1,11 @@
+{
+  "sangria_music": {
+    "subtitle": "subtitles.cocktails.sangria_music",
+    "sounds": [
+      {
+        "name": "cocktails:sangria_music",
+        "stream": true
+      }
+    ]
+  }
+}
