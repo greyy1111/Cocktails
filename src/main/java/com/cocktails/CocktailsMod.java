@@ -22,8 +22,10 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -107,6 +109,11 @@ public class CocktailsMod {
                 event.setAmount(event.getAmount() * 0.2f);
             }
         }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onLivingTick(LivingEvent.LivingTickEvent event) {
+        SangriaEffect.tick(event.getEntity());
     }
 
     private boolean tryPlaceBlockUnderPlayer(Player player, InteractionHand hand, ItemStack held) {
